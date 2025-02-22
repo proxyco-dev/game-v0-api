@@ -2,16 +2,57 @@ package main
 
 import (
 	"context"
+	"database/sql"
+	"fmt"
 	_ "game-v0-api/docs"
+	"log"
 	"log/slog"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/ilyakaznacheev/cleanenv"
+	"github.com/joho/godotenv"
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"github.com/uptrace/bun"
+	"github.com/uptrace/bun/dialect/pgdialect"
+	"github.com/uptrace/bun/driver/pgdriver"
+	"github.com/uptrace/bun/extra/bundebug"
 )
+
+type Config struct {
+	Database struct {
+		Host     string `env:"DB_HOST"`
+		Port     int    `env:"DB_PORT"`
+		User     string `env:"DB_USER"`
+		Password string `env:"DB_PASSWORD"`
+		Database string `env:"DB_DATABASE"`
+		Insecure bool   `env:"DB_INSECURE"`
+	} `yaml:"database"`
+}
+
+func LoadConfig() Config {
+	cfg := Config{}
+
+	env := os.Getenv("ENV")
+	if env == "" {
+		env = "local"
+	}
+
+	err := godotenv.Load(".env." + env)
+	if err != nil {
+		log.Fatal("Error loading .env file: %v", err)
+	}
+
+	err = cleanenv.ReadEnv(&cfg)
+	if err != nil {
+		log.Fatal("Error reading .env file: %v", err)
+	}
+
+	return cfg
+}
 
 type RoomDTO struct {
 	Name       string `json:"name" binding:"required"`
@@ -26,6 +67,7 @@ type Room struct {
 	Code       string    `bun:"code,type:varchar(6),notnull" json:"code"`
 	Address    string    `bun:"address,type:varchar(128),notnull" json:"address"`
 	Name       string    `bun:"name,type:varchar(128),notnull" json:"name"`
+	Players    int       `bun:"players,type:int,nullzero,default:0" json:"players"`
 	MaxPlayers int       `bun:"maxPlayers,type:int,notnull,default:2" json:"maxPlayers"`
 	Private    bool      `bun:"private,notnull,default:false"`
 	CreatedAt  time.Time `bun:"createdAt,nullzero,notnull,default:current_timestamp" json:"createdAt"`
@@ -47,22 +89,20 @@ func (this HandlerV1) CreateRoomV1(c *gin.Context) {
 	dto := RoomDTO{MaxPlayers: 2, Private: false}
 
 	if err := c.ShouldBind(&dto); err != nil {
-
 		c.AbortWithError(http.StatusBadRequest, err)
-
 		return
-
 	}
 
 	slog.Info("DTO is {}", dto)
 
-	room := Room{Name: dto.Name, MaxPlayers: dto.MaxPlayers, Private: dto.Private}
-
 	// spin up game server => Address
+	address := ""
 
 	// create Room model => Generate a Code for the room
+	code := ""
 
 	// save Room model in database => Fill in all fields that remain
+	room := Room{Code: code, Address: address, Name: dto.Name, MaxPlayers: dto.MaxPlayers, Private: dto.Private}
 
 	_, err := this.db.NewInsert().Model(&room).Exec(c)
 
@@ -126,6 +166,21 @@ func (this roomsService) CreateRoom(c context.Context, room RoomDTO) (Room, erro
 // @contact.name Nika Shamiladze
 // @contact.email fbshamiladze@gmail.com
 func main() {
+	config := LoadConfig()
+	slog.Info("The config is: %v", config)
+
+	pgconn := pgdriver.NewConnector(
+		pgdriver.WithAddr(fmt.Sprintf("%s:%d", config.Database.Host, config.Database.Port)),
+		pgdriver.WithUser(config.Database.User),
+		pgdriver.WithPassword(config.Database.Password),
+		pgdriver.WithDatabase(config.Database.Database),
+		pgdriver.WithInsecure(config.Database.Insecure),
+	)
+
+	sqldb := sql.OpenDB(pgconn)
+	db := bun.NewDB(sqldb, pgdialect.New())
+	db.AddQueryHook(bundebug.NewQueryHook(bundebug.WithVerbose(true)))
+
 	router := gin.Default()
 
 	handler := HandlerV1{db: nil}
