@@ -34,7 +34,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/main.RoomDTO"
+                                "$ref": "#/definitions/models.Room"
                             }
                         }
                     }
@@ -49,29 +49,18 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "summary": "Create a new room",
-                "parameters": [
-                    {
-                        "description": "Room details",
-                        "name": "room",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/main.RoomDTO"
-                        }
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/main.RoomDTO"
+                            "$ref": "#/definitions/models.Room"
                         }
                     }
                 }
             }
         },
-        "/api/v1/rooms/{ID}/join": {
-            "post": {
+        "/api/v1/rooms/join/{code}": {
+            "get": {
                 "description": "Join a room",
                 "consumes": [
                     "application/json"
@@ -80,11 +69,20 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "summary": "Join a room",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Room code",
+                        "name": "code",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/main.RoomDTO"
+                            "$ref": "#/definitions/models.Room"
                         }
                     }
                 }
@@ -92,20 +90,35 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "main.RoomDTO": {
+        "models.Room": {
             "type": "object",
-            "required": [
-                "name"
-            ],
             "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "code": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
                 "maxPlayers": {
                     "type": "integer"
                 },
                 "name": {
                     "type": "string"
                 },
+                "players": {
+                    "type": "integer"
+                },
                 "private": {
                     "type": "boolean"
+                },
+                "updatedAt": {
+                    "type": "string"
                 }
             }
         }

@@ -1,15 +1,25 @@
 basePath: /
 definitions:
-  main.RoomDTO:
+  models.Room:
     properties:
+      address:
+        type: string
+      code:
+        type: string
+      createdAt:
+        type: string
+      id:
+        type: integer
       maxPlayers:
         type: integer
       name:
         type: string
+      players:
+        type: integer
       private:
         type: boolean
-    required:
-    - name
+      updatedAt:
+        type: string
     type: object
 host: localhost:8080
 info:
@@ -32,39 +42,38 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/main.RoomDTO'
+              $ref: '#/definitions/models.Room'
             type: array
       summary: List all rooms
     post:
       consumes:
       - application/json
       description: Create a new room
-      parameters:
-      - description: Room details
-        in: body
-        name: room
-        required: true
-        schema:
-          $ref: '#/definitions/main.RoomDTO'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/main.RoomDTO'
+            $ref: '#/definitions/models.Room'
       summary: Create a new room
-  /api/v1/rooms/{ID}/join:
-    post:
+  /api/v1/rooms/join/{code}:
+    get:
       consumes:
       - application/json
       description: Join a room
+      parameters:
+      - description: Room code
+        in: path
+        name: code
+        required: true
+        type: string
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/main.RoomDTO'
+            $ref: '#/definitions/models.Room'
       summary: Join a room
 swagger: "2.0"

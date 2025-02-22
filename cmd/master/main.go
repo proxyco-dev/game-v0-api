@@ -5,7 +5,7 @@ import (
 	_ "game-v0-api/docs"
 	"game-v0-api/pkg/config"
 	"game-v0-api/pkg/database"
-	"game-v0-api/pkg/models"
+	models "game-v0-api/pkg/models"
 	"log/slog"
 	"net/http"
 
@@ -23,8 +23,7 @@ type HandlerV1 struct {
 // @Description Create a new room
 // @Accept json
 // @Produce json
-// @Param room body RoomDTO true "Room details"
-// @Success 200 {object} RoomDTO
+// @Success 200 {object} models.Room
 // @Router /api/v1/rooms [post]
 func (this HandlerV1) CreateRoomV1(c *gin.Context) {
 	dto := models.RoomDTO{MaxPlayers: 2, Private: false}
@@ -40,7 +39,7 @@ func (this HandlerV1) CreateRoomV1(c *gin.Context) {
 	address := ""
 
 	// create Room model => Generate a Code for the room
-	code := ""
+	code := "abcd"
 
 	// save Room model in database => Fill in all fields that remain
 	room := models.Room{Code: code, Address: address, Name: dto.Name, MaxPlayers: dto.MaxPlayers, Private: dto.Private}
@@ -62,24 +61,40 @@ func (this HandlerV1) CreateRoomV1(c *gin.Context) {
 // @Description List all rooms
 // @Accept json
 // @Produce json
-// @Success 200 {array} RoomDTO
+// @Success 200 {array} models.Room
 // @Router /api/v1/rooms [get]
 func (this HandlerV1) ListRoomsV1(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{
-		"message": "pong",
-	})
+	rooms := []models.Room{}
+
+	err := this.db.NewSelect().Model(&rooms).Where("? = ?", bun.Ident("private"), false).Scan(c)
+
+	if err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, rooms)
 }
 
 // @Summary Join a room
 // @Description Join a room
 // @Accept json
 // @Produce json
-// @Success 200 {object} RoomDTO
-// @Router /api/v1/rooms/{ID}/join [post]
+// @Param code path string true "Room code"
+// @Success 200 {object} models.Room
+// @Router /api/v1/rooms/join/{code} [get]
 func (this HandlerV1) JoinRoomV1(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{
-		"message": "pong",
-	})
+	code := c.Param("code")
+	room := models.Room{}
+
+	err := this.db.NewSelect().Model(&room).Where("? = ?", bun.Ident("code"), code).Limit(1).Scan(c)
+
+	if err != nil {
+		c.AbortWithError(http.StatusNotFound, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, room)
 }
 
 type RoomsService interface {
@@ -121,7 +136,7 @@ func main() {
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 	apiV1.GET("/rooms", handler.ListRoomsV1)
 	apiV1.POST("/rooms", handler.CreateRoomV1)
-	apiV1.GET("/join/:code", handler.JoinRoomV1)
+	apiV1.GET("/rooms/join/:code", handler.JoinRoomV1)
 
 	router.Run()
 }
