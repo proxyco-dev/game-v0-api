@@ -2,15 +2,13 @@ basePath: /
 definitions:
   main.RoomDTO:
     properties:
-      description:
-        type: string
       maxPlayers:
         type: integer
       name:
         type: string
+      private:
+        type: boolean
     required:
-    - description
-    - maxPlayers
     - name
     type: object
 host: localhost:8080

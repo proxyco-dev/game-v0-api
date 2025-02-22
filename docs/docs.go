@@ -95,19 +95,17 @@ const docTemplate = `{
         "main.RoomDTO": {
             "type": "object",
             "required": [
-                "description",
-                "maxPlayers",
                 "name"
             ],
             "properties": {
-                "description": {
-                    "type": "string"
-                },
                 "maxPlayers": {
                     "type": "integer"
                 },
                 "name": {
                     "type": "string"
+                },
+                "private": {
+                    "type": "boolean"
                 }
             }
         }
