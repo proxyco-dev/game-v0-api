@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	_ "game-v0-api/docs"
 	"net/http"
 	"time"
@@ -22,15 +23,22 @@ type Room struct {
 	bun.BaseModel `bun:"table:rooms,alias:r"`
 
 	ID int64 `bun:"id,pk,autoincrement" json:"id"`
-
-	Name string `bun:"name,type:varchar(128),notnull" json:"name"`
-	MaxPlayers int	`bun:"maxPlayers,type:int,notnull" json:"maxPlayers"`
-	Description string `bun:"description,type:varchar(512),nullzero,notnull,default:''" json:"description"`
 	Address string `bun:"address,type:varchar(128),notnull" json:"address"`
-	Password string `bun:"password,type:varchar(128)" json:"password"`
-
+	Name string `bun:"name,type:varchar(128),notnull" json:"name"`
+	MaxPlayers int	`bun:"maxPlayers,type:int,notnull,default:2" json:"maxPlayers"`
+	Description string `bun:"description,type:varchar(512),nullzero,notnull,default:''" json:"description"`
+	Private bool `bun:"private,notnull,default:false" json:"private"`
 	CreatedAt time.Time `bun:"createdAt,nullzero,notnull,default:current_timestamp" json:"createdAt"`
 	UpdatedAt time.Time `bun:"updatedAt,nullzero,notnull,default:current_timestamp" json:"updatedAt"`
+}
+
+func NewRoom(r RoomDTO) Room {
+	return Room{
+		Name: r.Name,
+		MaxPlayers: r.MaxPlayers,
+		Description: r.Description,
+		Private: r.Private,
+	}
 }
 
 // @Summary List all rooms
@@ -75,6 +83,23 @@ func JoinRoomV1(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "pong",
 	})
+}
+
+type RoomsService interface {
+	CreateRoom(c context.Context, room RoomDTO) (Room, error)
+}
+
+type roomsService struct {
+	// gameService GameService
+	// roomsRepository RoomsRepository
+}
+
+func NewRoomService() RoomsService {
+	return roomsService{}
+}
+
+func (this roomsService)CreateRoom(c context.Context, room RoomDTO) (Room, error) {
+ return Room{Name: room.Name, MaxPlayers: room.MaxPlayers, Description: room.Description, Private: room.Private}, nil
 }
 
 // @title Game V0 API
