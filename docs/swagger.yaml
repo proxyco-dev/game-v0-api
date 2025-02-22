@@ -1,6 +1,6 @@
 basePath: /
 definitions:
-  models.Room:
+  matchmaker.Room:
     properties:
       address:
         type: string
@@ -8,6 +8,8 @@ definitions:
         type: string
       createdAt:
         type: string
+      gamePort:
+        type: integer
       id:
         type: integer
       maxPlayers:
@@ -18,6 +20,8 @@ definitions:
         type: integer
       private:
         type: boolean
+      queryPort:
+        type: integer
       updatedAt:
         type: string
     type: object
@@ -42,7 +46,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/models.Room'
+              $ref: '#/definitions/matchmaker.Room'
             type: array
       summary: List all rooms
     post:
@@ -55,13 +59,13 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.Room'
+            $ref: '#/definitions/matchmaker.Room'
       summary: Create a new room
-  /api/v1/rooms/join/{code}:
+  /api/v1/rooms/{code}:
     get:
       consumes:
       - application/json
-      description: Join a room
+      description: Get a room
       parameters:
       - description: Room code
         in: path
@@ -74,6 +78,6 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.Room'
-      summary: Join a room
+            $ref: '#/definitions/matchmaker.Room'
+      summary: Get a room
 swagger: "2.0"

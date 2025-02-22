@@ -28,7 +28,7 @@
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/models.Room"
+                                "$ref": "#/definitions/matchmaker.Room"
                             }
                         }
                     }
@@ -47,22 +47,22 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.Room"
+                            "$ref": "#/definitions/matchmaker.Room"
                         }
                     }
                 }
             }
         },
-        "/api/v1/rooms/join/{code}": {
+        "/api/v1/rooms/{code}": {
             "get": {
-                "description": "Join a room",
+                "description": "Get a room",
                 "consumes": [
                     "application/json"
                 ],
                 "produces": [
                     "application/json"
                 ],
-                "summary": "Join a room",
+                "summary": "Get a room",
                 "parameters": [
                     {
                         "type": "string",
@@ -76,7 +76,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.Room"
+                            "$ref": "#/definitions/matchmaker.Room"
                         }
                     }
                 }
@@ -84,7 +84,7 @@
         }
     },
     "definitions": {
-        "models.Room": {
+        "matchmaker.Room": {
             "type": "object",
             "properties": {
                 "address": {
@@ -95,6 +95,9 @@
                 },
                 "createdAt": {
                     "type": "string"
+                },
+                "gamePort": {
+                    "type": "integer"
                 },
                 "id": {
                     "type": "integer"
@@ -110,6 +113,9 @@
                 },
                 "private": {
                     "type": "boolean"
+                },
+                "queryPort": {
+                    "type": "integer"
                 },
                 "updatedAt": {
                     "type": "string"

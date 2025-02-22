@@ -34,7 +34,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/models.Room"
+                                "$ref": "#/definitions/matchmaker.Room"
                             }
                         }
                     }
@@ -53,22 +53,22 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.Room"
+                            "$ref": "#/definitions/matchmaker.Room"
                         }
                     }
                 }
             }
         },
-        "/api/v1/rooms/join/{code}": {
+        "/api/v1/rooms/{code}": {
             "get": {
-                "description": "Join a room",
+                "description": "Get a room",
                 "consumes": [
                     "application/json"
                 ],
                 "produces": [
                     "application/json"
                 ],
-                "summary": "Join a room",
+                "summary": "Get a room",
                 "parameters": [
                     {
                         "type": "string",
@@ -82,7 +82,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.Room"
+                            "$ref": "#/definitions/matchmaker.Room"
                         }
                     }
                 }
@@ -90,7 +90,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "models.Room": {
+        "matchmaker.Room": {
             "type": "object",
             "properties": {
                 "address": {
@@ -101,6 +101,9 @@ const docTemplate = `{
                 },
                 "createdAt": {
                     "type": "string"
+                },
+                "gamePort": {
+                    "type": "integer"
                 },
                 "id": {
                     "type": "integer"
@@ -116,6 +119,9 @@ const docTemplate = `{
                 },
                 "private": {
                     "type": "boolean"
+                },
+                "queryPort": {
+                    "type": "integer"
                 },
                 "updatedAt": {
                     "type": "string"
