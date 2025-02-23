@@ -54,8 +54,9 @@ func (h *RoomHandler) CreateRoom(c *fiber.Ctx) error {
 	}
 
 	room := &entities.Room{
-		Title:      request.Title,
-		MaxPlayers: request.MaxPlayers,
+		Title:       request.Title,
+		MaxPlayers:  request.MaxPlayers,
+		CreatedByID: uuid.MustParse(c.Locals("user").(jwt.MapClaims)["id"].(string)),
 	}
 
 	if err := h.roomRepo.Create(room); err != nil {
