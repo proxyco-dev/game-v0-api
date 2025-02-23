@@ -17,6 +17,8 @@ definitions:
     type: object
   presenter.RoomRequest:
     properties:
+      maxPlayers:
+        type: integer
       title:
         type: string
     type: object

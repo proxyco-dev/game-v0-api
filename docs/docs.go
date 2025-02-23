@@ -296,6 +296,9 @@ const docTemplate = `{
         "presenter.RoomRequest": {
             "type": "object",
             "properties": {
+                "maxPlayers": {
+                    "type": "integer"
+                },
                 "title": {
                     "type": "string"
                 }

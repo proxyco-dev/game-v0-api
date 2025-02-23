@@ -54,7 +54,8 @@ func (h *RoomHandler) CreateRoom(c *fiber.Ctx) error {
 	}
 
 	room := &entities.Room{
-		Title: request.Title,
+		Title:      request.Title,
+		MaxPlayers: request.MaxPlayers,
 	}
 
 	if err := h.roomRepo.Create(room); err != nil {

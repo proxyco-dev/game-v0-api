@@ -5,7 +5,8 @@ type RoomResponse struct {
 }
 
 type RoomRequest struct {
-	Title string `json:"title"`
+	Title      string `json:"title"`
+	MaxPlayers int    `json:"maxPlayers"`
 }
 
 type JoinRoomRequest struct {
