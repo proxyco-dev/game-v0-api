@@ -69,7 +69,7 @@ func (h *RoomHandler) CreateRoom(c *fiber.Ctx) error {
 		MessageID: "CreatedSuccessfully",
 	})
 
-	h.websocketHandler.GetManager().EmitToRoom(room.ID.String(), "ROOM_CREATED", fiber.Map{
+	h.websocketHandler.GetManager().EmitToRoom("room", "created", fiber.Map{
 		"message": message,
 	})
 
@@ -160,7 +160,7 @@ func (h *RoomHandler) JoinRoom(c *fiber.Ctx) error {
 		MessageID: "JoinedSuccessfully",
 	})
 
-	h.websocketHandler.GetManager().EmitToRoom(room.ID.String(), "USER_JOINED", fiber.Map{
+	h.websocketHandler.GetManager().EmitToRoom("room", "USER_JOINED", fiber.Map{
 		"message": message,
 	})
 
