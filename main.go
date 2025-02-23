@@ -60,7 +60,7 @@ func main() {
 	userRepo := userRepository.NewUserRepository(database.DB)
 	userHandler := handlers.NewUserHandler(userRepo)
 
-	api.Get("/user/me", userHandler.GetMe)
+	api.Get("/user/me", common.AuthMiddleware, userHandler.GetMe)
 
 	api.Post("/user/sign-in", userHandler.SignIn)
 	api.Post("/user/sign-up", userHandler.SignUp)

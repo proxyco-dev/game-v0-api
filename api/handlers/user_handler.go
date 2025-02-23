@@ -36,10 +36,8 @@ func NewUserHandler(userRepo repository.UserRepository) *UserHandler {
 // @Failure 401 {object} presenter.ErrorResponse
 // @Router /api/user/me [get]
 func (h *UserHandler) GetMe(c *fiber.Ctx) error {
-	user := c.Locals("user").(*jwt.Token)
-	claims := user.Claims.(jwt.MapClaims)
-	email := claims["email"].(string)
-	return c.Status(200).JSON(presenter.MeResponse{Email: email})
+	id := c.Locals("user").(jwt.MapClaims)["id"].(string)
+	return c.Status(200).JSON(presenter.MeResponse{Id: id})
 }
 
 // signIn godoc

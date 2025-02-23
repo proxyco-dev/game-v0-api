@@ -10,7 +10,7 @@ type SignInResponse struct {
 }
 
 type MeResponse struct {
-	Email string `json:"email"`
+	Id string `json:"id"`
 }
 
 type SignUpRequest struct {
