@@ -15,8 +15,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-var jwtSecret = []byte(os.Getenv("JWT_SECRET"))
-
 type UserHandler struct {
 	userRepo  repository.UserRepository
 	validator *validator.Validate
@@ -144,10 +142,10 @@ func checkPasswordHash(password, hash string) bool {
 	return bcrypt.CompareHashAndPassword([]byte(hash), []byte(password)) == nil
 }
 
-func generateToken(phoneNumber string) (string, error) {
+func generateToken(email string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"phoneNumber": phoneNumber,
-		"exp":         time.Now().Add(time.Hour * 72).Unix(),
+		"email": email,
+		"exp":   time.Now().Add(time.Hour * 72).Unix(),
 	})
-	return token.SignedString(jwtSecret)
+	return token.SignedString([]byte(os.Getenv("JWT_SECRET")))
 }

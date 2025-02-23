@@ -60,7 +60,15 @@ func (h *RoomHandler) CreateRoom(c *fiber.Ctx) error {
 	redisClient := redis.GetClient()
 	ctx := context.Background()
 
-	redisClient.Set(ctx, "rooms:"+room.ID.String(), room, 0)
+	roomJson, err := json.Marshal(room)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(presenter.ErrorResponse{Error: err.Error()})
+	}
+
+	err = redisClient.Set(ctx, "rooms:"+room.ID.String(), roomJson, 0).Err()
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(presenter.ErrorResponse{Error: err.Error()})
+	}
 
 	localizer := c.Locals("localizer").(*i18n.Localizer)
 
@@ -146,8 +154,14 @@ func (h *RoomHandler) JoinRoom(c *fiber.Ctx) error {
 
 	redisClient.Set(ctx, "rooms:"+room.ID.String(), room, 0)
 
+	localizer := c.Locals("localizer").(*i18n.Localizer)
+
+	message, _ := localizer.Localize(&i18n.LocalizeConfig{
+		MessageID: "JoinedSuccessfully",
+	})
+
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"message": "Room joined successfully",
+		"message": message,
 		"room":    room,
 	})
 }
