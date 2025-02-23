@@ -66,6 +66,7 @@ func main() {
 
 	app.Post("/room", common.AuthMiddleware, roomHandler.CreateRoom)
 	app.Get("/room", common.AuthMiddleware, roomHandler.GetRooms)
+	app.Post("/room/join", common.AuthMiddleware, roomHandler.JoinRoom)
 
 	log.Fatal(app.Listen(":8080"))
 }

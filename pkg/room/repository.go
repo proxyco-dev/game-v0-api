@@ -14,6 +14,7 @@ type RoomRepository interface {
 	Create(room *entities.Room) error
 	FindAll() ([]entities.Room, error)
 	FindById(id string) (*entities.Room, error)
+	Update(room *entities.Room) error
 }
 
 type roomRepository struct {
@@ -44,4 +45,8 @@ func (r *roomRepository) FindById(id string) (*entities.Room, error) {
 		return nil, err
 	}
 	return &room, nil
+}
+
+func (r *roomRepository) Update(room *entities.Room) error {
+	return r.db.Table(roomsTableName).Save(room).Error
 }

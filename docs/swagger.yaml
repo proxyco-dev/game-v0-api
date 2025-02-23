@@ -5,6 +5,11 @@ definitions:
       error:
         type: string
     type: object
+  presenter.JoinRoomRequest:
+    properties:
+      id:
+        type: string
+    type: object
   presenter.MeResponse:
     properties:
       email:
@@ -113,6 +118,28 @@ paths:
           schema:
             $ref: '#/definitions/presenter.RoomResponse'
       summary: Create a room
+      tags:
+      - Room
+  /room/join:
+    post:
+      consumes:
+      - application/json
+      description: Join a room
+      parameters:
+      - description: Room
+        in: body
+        name: room
+        required: true
+        schema:
+          $ref: '#/definitions/presenter.JoinRoomRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/presenter.RoomResponse'
+      summary: Join a room
       tags:
       - Room
   /user/me:

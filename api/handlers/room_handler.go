@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"encoding/json"
 	"game-v0-api/api/presenter"
 	entities "game-v0-api/pkg/entities"
 	"game-v0-api/pkg/redis"
@@ -119,10 +120,31 @@ func (h *RoomHandler) JoinRoom(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(presenter.ErrorResponse{Error: validationErrors.Error()})
 	}
 
-	room, err := h.roomRepo.FindById(request.Id)
+	var room *entities.Room
+	redisRoom, err := redis.GetClient().Get(context.Background(), "rooms:"+request.Id).Result()
 	if err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(presenter.ErrorResponse{Error: err.Error()})
+		room, err = h.roomRepo.FindById(request.Id)
+		if err != nil {
+			return c.Status(fiber.StatusNotFound).JSON(presenter.ErrorResponse{Error: err.Error()})
+		}
+	} else {
+		if err := json.Unmarshal([]byte(redisRoom), &room); err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(presenter.ErrorResponse{Error: err.Error()})
+		}
 	}
+
+	user := c.Locals("user").(*entities.User)
+
+	room.Users = append(room.Users, user)
+
+	if err := h.roomRepo.Update(room); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(presenter.ErrorResponse{Error: err.Error()})
+	}
+
+	redisClient := redis.GetClient()
+	ctx := context.Background()
+
+	redisClient.Set(ctx, "rooms:"+room.ID.String(), room, 0)
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"message": "Room joined successfully",
