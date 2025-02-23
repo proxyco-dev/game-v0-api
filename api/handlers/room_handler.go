@@ -38,7 +38,7 @@ func NewRoomHandler(roomRepo repository.RoomRepository, bundle *i18n.Bundle, web
 // @Produce json
 // @Param room body presenter.RoomRequest true "Room"
 // @Success 200 {object} presenter.RoomResponse
-// @Router /room [post]
+// @Router /api/room [post]
 func (h *RoomHandler) CreateRoom(c *fiber.Ctx) error {
 	var request presenter.RoomRequest
 
@@ -91,7 +91,7 @@ func (h *RoomHandler) CreateRoom(c *fiber.Ctx) error {
 // @Accept json
 // @Produce json
 // @Success 200 {array} map[string]interface{}
-// @Router /room [get]
+// @Router /api/room [get]
 func (h *RoomHandler) GetRooms(c *fiber.Ctx) error {
 	localizer := c.Locals("localizer").(*i18n.Localizer)
 
@@ -119,7 +119,7 @@ func (h *RoomHandler) GetRooms(c *fiber.Ctx) error {
 // @Produce json
 // @Param room body presenter.JoinRoomRequest true "Room"
 // @Success 200 {object} presenter.RoomResponse
-// @Router /room/join [post]
+// @Router /api/room/join [post]
 func (h *RoomHandler) JoinRoom(c *fiber.Ctx) error {
 	var request presenter.JoinRoomRequest
 
@@ -181,7 +181,7 @@ func (h *RoomHandler) JoinRoom(c *fiber.Ctx) error {
 // @Produce json
 // @Param id path string true "Room ID"
 // @Success 200 {object} presenter.RoomResponse
-// @Router /room/{id} [get]
+// @Router /api/room/{id} [get]
 func (h *RoomHandler) FindOne(c *fiber.Ctx) error {
 	id := c.Params("id")
 	redisClient := redis.GetClient()

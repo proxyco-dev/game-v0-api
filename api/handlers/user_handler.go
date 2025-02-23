@@ -34,7 +34,7 @@ func NewUserHandler(userRepo repository.UserRepository) *UserHandler {
 // @Produce json
 // @Success 200 {object} presenter.MeResponse
 // @Failure 401 {object} presenter.ErrorResponse
-// @Router /user/me [get]
+// @Router /api/user/me [get]
 func (h *UserHandler) GetMe(c *fiber.Ctx) error {
 	user := c.Locals("user").(*jwt.Token)
 	claims := user.Claims.(jwt.MapClaims)
@@ -52,7 +52,7 @@ func (h *UserHandler) GetMe(c *fiber.Ctx) error {
 // @Failure 400 {object} presenter.ErrorResponse
 // @Failure 401 {object} presenter.ErrorResponse
 // @Failure 500 {object} presenter.ErrorResponse
-// @Router /user/sign-in [post]
+// @Router /api/user/sign-in [post]
 func (h *UserHandler) SignIn(c *fiber.Ctx) error {
 	var request presenter.SignInRequest
 
@@ -86,7 +86,7 @@ func (h *UserHandler) SignIn(c *fiber.Ctx) error {
 // @Success 200 {object} presenter.SignUpResponse "Returns message and user object with excluded fields"
 // @Failure 400 {object} presenter.ErrorResponse
 // @Failure 500 {object} presenter.ErrorResponse
-// @Router /user/sign-up [post]
+// @Router /api/user/sign-up [post]
 func (h *UserHandler) SignUp(c *fiber.Ctx) error {
 	var request presenter.SignUpRequest
 

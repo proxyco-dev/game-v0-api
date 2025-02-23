@@ -18,7 +18,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/room": {
+        "/api/room": {
             "get": {
                 "description": "Get all rooms",
                 "consumes": [
@@ -77,7 +77,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/room/join": {
+        "/api/room/join": {
             "post": {
                 "description": "Join a room",
                 "consumes": [
@@ -111,7 +111,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/room/{id}": {
+        "/api/room/{id}": {
             "get": {
                 "description": "Find one room",
                 "consumes": [
@@ -143,7 +143,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/user/me": {
+        "/api/user/me": {
             "get": {
                 "consumes": [
                     "application/json"
@@ -171,7 +171,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/user/sign-in": {
+        "/api/user/sign-in": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -222,7 +222,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/user/sign-up": {
+        "/api/user/sign-up": {
             "post": {
                 "consumes": [
                     "application/json"

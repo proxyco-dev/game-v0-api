@@ -54,14 +54,16 @@ func main() {
 
 	app.Get("/swagger/*", fiberSwagger.WrapHandler)
 
+	api := app.Group("/api")
+
 	// User Routes
 	userRepo := userRepository.NewUserRepository(database.DB)
 	userHandler := handlers.NewUserHandler(userRepo)
 
-	app.Get("/user/me", userHandler.GetMe)
+	api.Get("/user/me", userHandler.GetMe)
 
-	app.Post("/user/sign-in", userHandler.SignIn)
-	app.Post("/user/sign-up", userHandler.SignUp)
+	api.Post("/user/sign-in", userHandler.SignIn)
+	api.Post("/user/sign-up", userHandler.SignUp)
 
 	// Room Routes
 	roomRepo := roomRepository.NewRoomRepository(database.DB)
@@ -71,13 +73,13 @@ func main() {
 
 	roomHandler := handlers.NewRoomHandler(roomRepo, bundle, wsHandler)
 
-	app.Get("/room", common.AuthMiddleware, roomHandler.GetRooms)
-	app.Get("/room/:id", common.AuthMiddleware, roomHandler.FindOne)
+	api.Get("/room", common.AuthMiddleware, roomHandler.GetRooms)
+	api.Get("/room/:id", common.AuthMiddleware, roomHandler.FindOne)
 
-	app.Post("/room", common.AuthMiddleware, roomHandler.CreateRoom)
-	app.Post("/room/join", common.AuthMiddleware, roomHandler.JoinRoom)
+	api.Post("/room", common.AuthMiddleware, roomHandler.CreateRoom)
+	api.Post("/room/join", common.AuthMiddleware, roomHandler.JoinRoom)
 
-	app.Use("/ws", func(c *fiber.Ctx) error {
+	api.Use("/ws", func(c *fiber.Ctx) error {
 		if websocket.IsWebSocketUpgrade(c) {
 			roomID := c.Query("roomId")
 			if roomID == "" {
@@ -88,7 +90,7 @@ func main() {
 		}
 		return fiber.ErrUpgradeRequired
 	})
-	app.Get("/ws", websocket.New(wsHandler.HandleWebSocket))
+	api.Get("/ws", websocket.New(wsHandler.HandleWebSocket))
 
 	log.Fatal(app.Listen(":8080"))
 }

@@ -12,7 +12,7 @@
     "host": "localhost:8080",
     "basePath": "/",
     "paths": {
-        "/room": {
+        "/api/room": {
             "get": {
                 "description": "Get all rooms",
                 "consumes": [
@@ -71,7 +71,7 @@
                 }
             }
         },
-        "/room/join": {
+        "/api/room/join": {
             "post": {
                 "description": "Join a room",
                 "consumes": [
@@ -105,7 +105,7 @@
                 }
             }
         },
-        "/room/{id}": {
+        "/api/room/{id}": {
             "get": {
                 "description": "Find one room",
                 "consumes": [
@@ -137,7 +137,7 @@
                 }
             }
         },
-        "/user/me": {
+        "/api/user/me": {
             "get": {
                 "consumes": [
                     "application/json"
@@ -165,7 +165,7 @@
                 }
             }
         },
-        "/user/sign-in": {
+        "/api/user/sign-in": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -216,7 +216,7 @@
                 }
             }
         },
-        "/user/sign-up": {
+        "/api/user/sign-up": {
             "post": {
                 "consumes": [
                     "application/json"
