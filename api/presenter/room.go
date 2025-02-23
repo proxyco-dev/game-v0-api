@@ -5,9 +5,7 @@ type RoomResponse struct {
 }
 
 type RoomRequest struct {
-	Title   string `json:"title"`
-	Private bool   `json:"private"`
-	Code    string `json:"code"`
+	Title string `json:"title"`
 }
 
 type JoinRoomRequest struct {

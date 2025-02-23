@@ -264,12 +264,6 @@ const docTemplate = `{
         "presenter.RoomRequest": {
             "type": "object",
             "properties": {
-                "code": {
-                    "type": "string"
-                },
-                "private": {
-                    "type": "boolean"
-                },
                 "title": {
                     "type": "string"
                 }

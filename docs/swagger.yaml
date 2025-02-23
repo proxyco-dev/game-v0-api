@@ -17,10 +17,6 @@ definitions:
     type: object
   presenter.RoomRequest:
     properties:
-      code:
-        type: string
-      private:
-        type: boolean
       title:
         type: string
     type: object
