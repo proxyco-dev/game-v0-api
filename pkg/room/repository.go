@@ -32,7 +32,7 @@ func (r *roomRepository) Create(room *entities.Room) error {
 
 func (r *roomRepository) FindAll() ([]entities.Room, error) {
 	var rooms []entities.Room
-	err := r.db.Table(roomsTableName).Where("is_active = ? AND is_deleted = ?", true, false).Find(&rooms).Error
+	err := r.db.Table(roomsTableName).Preload("Users").Where("is_active = ? AND is_deleted = ?", true, false).Find(&rooms).Error
 	if err != nil {
 		return nil, err
 	}
@@ -41,7 +41,7 @@ func (r *roomRepository) FindAll() ([]entities.Room, error) {
 
 func (r *roomRepository) FindById(id string) (*entities.Room, error) {
 	var room entities.Room
-	err := r.db.Table(roomsTableName).Where("id = ? AND is_deleted = ? AND is_active = ?", id, false, true).First(&room).Error
+	err := r.db.Table(roomsTableName).Preload("Users").Where("id = ? AND is_deleted = ? AND is_active = ?", id, false, true).First(&room).Error
 	if err != nil {
 		return nil, err
 	}

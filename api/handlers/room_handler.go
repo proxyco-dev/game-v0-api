@@ -1,11 +1,9 @@
 package handlers
 
 import (
-	"context"
-	"encoding/json"
+	"fmt"
 	"game-v0-api/api/presenter"
 	entities "game-v0-api/pkg/entities"
-	"game-v0-api/pkg/redis"
 	repository "game-v0-api/pkg/room"
 
 	"github.com/go-playground/validator/v10"
@@ -53,26 +51,16 @@ func (h *RoomHandler) CreateRoom(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(presenter.ErrorResponse{Error: validationErrors.Error()})
 	}
 
+	userID := uuid.MustParse(c.Locals("user").(jwt.MapClaims)["id"].(string))
+
 	room := &entities.Room{
 		Title:       request.Title,
 		MaxPlayers:  request.MaxPlayers,
-		CreatedByID: uuid.MustParse(c.Locals("user").(jwt.MapClaims)["id"].(string)),
+		CreatedByID: userID,
+		Users:       []*entities.User{{ID: userID}},
 	}
 
 	if err := h.roomRepo.Create(room); err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(presenter.ErrorResponse{Error: err.Error()})
-	}
-
-	redisClient := redis.GetClient()
-	ctx := context.Background()
-
-	roomJson, err := json.Marshal(room)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(presenter.ErrorResponse{Error: err.Error()})
-	}
-
-	err = redisClient.Set(ctx, "rooms:"+room.ID.String(), roomJson, 0).Err()
-	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(presenter.ErrorResponse{Error: err.Error()})
 	}
 
@@ -80,6 +68,10 @@ func (h *RoomHandler) CreateRoom(c *fiber.Ctx) error {
 
 	message, _ := localizer.Localize(&i18n.LocalizeConfig{
 		MessageID: "CreatedSuccessfully",
+	})
+
+	h.websocketHandler.GetManager().EmitToRoom(room.ID.String(), "ROOM_CREATED", fiber.Map{
+		"message": message,
 	})
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
@@ -134,31 +126,31 @@ func (h *RoomHandler) JoinRoom(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(presenter.ErrorResponse{Error: validationErrors.Error()})
 	}
 
-	redisClient := redis.GetClient()
-	ctx := context.Background()
-
-	var room *entities.Room
-	redisRoom, err := redisClient.Get(ctx, "rooms:"+request.Id).Result()
+	room, err := h.roomRepo.FindById(request.Id)
 	if err != nil {
-		room, err = h.roomRepo.FindById(request.Id)
-		if err != nil {
-			return c.Status(fiber.StatusNotFound).JSON(presenter.ErrorResponse{Error: err.Error()})
-		}
-	} else {
-		if err := json.Unmarshal([]byte(redisRoom), &room); err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(presenter.ErrorResponse{Error: err.Error()})
+		return c.Status(fiber.StatusNotFound).JSON(presenter.ErrorResponse{Error: err.Error()})
+	}
+
+	if room.MaxPlayers == len(room.Users) {
+		return c.Status(fiber.StatusBadRequest).JSON(presenter.ErrorResponse{Error: "Room is full"})
+	}
+
+	userID := uuid.MustParse(c.Locals("user").(jwt.MapClaims)["id"].(string))
+
+	for _, user := range room.Users {
+		fmt.Println(user.ID, userID)
+		if user.ID == userID {
+			return c.Status(fiber.StatusBadRequest).JSON(presenter.ErrorResponse{
+				Error: "User is already in the room",
+			})
 		}
 	}
 
-	id := c.Locals("user").(jwt.MapClaims)["id"].(string)
-
-	room.Users = append(room.Users, &entities.User{ID: uuid.MustParse(id)})
+	room.Users = append(room.Users, &entities.User{ID: userID})
 
 	if err := h.roomRepo.Update(room); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(presenter.ErrorResponse{Error: err.Error()})
 	}
-
-	redisClient.Del(ctx, "rooms:"+room.ID.String())
 
 	localizer := c.Locals("localizer").(*i18n.Localizer)
 
@@ -186,27 +178,10 @@ func (h *RoomHandler) JoinRoom(c *fiber.Ctx) error {
 // @Router /api/room/{id} [get]
 func (h *RoomHandler) FindOne(c *fiber.Ctx) error {
 	id := c.Params("id")
-	redisClient := redis.GetClient()
-	ctx := context.Background()
 
-	var room *entities.Room
-	redisRoom, err := redisClient.Get(ctx, "rooms:"+id).Result()
+	room, err := h.roomRepo.FindByIdWithUsers(id)
 	if err != nil {
-		room, err = h.roomRepo.FindByIdWithUsers(id)
-		if err != nil {
-			return c.Status(fiber.StatusNotFound).JSON(presenter.ErrorResponse{Error: err.Error()})
-		}
-
-		roomJson, err := json.Marshal(room)
-		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(presenter.ErrorResponse{Error: err.Error()})
-		}
-
-		redisClient.Set(ctx, "rooms:"+id, roomJson, 0)
-	} else {
-		if err := json.Unmarshal([]byte(redisRoom), &room); err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(presenter.ErrorResponse{Error: err.Error()})
-		}
+		return c.Status(fiber.StatusNotFound).JSON(presenter.ErrorResponse{Error: err.Error()})
 	}
 
 	localizer := c.Locals("localizer").(*i18n.Localizer)
