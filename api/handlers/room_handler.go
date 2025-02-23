@@ -120,8 +120,11 @@ func (h *RoomHandler) JoinRoom(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(presenter.ErrorResponse{Error: validationErrors.Error()})
 	}
 
+	redisClient := redis.GetClient()
+	ctx := context.Background()
+
 	var room *entities.Room
-	redisRoom, err := redis.GetClient().Get(context.Background(), "rooms:"+request.Id).Result()
+	redisRoom, err := redisClient.Get(ctx, "rooms:"+request.Id).Result()
 	if err != nil {
 		room, err = h.roomRepo.FindById(request.Id)
 		if err != nil {
@@ -140,9 +143,6 @@ func (h *RoomHandler) JoinRoom(c *fiber.Ctx) error {
 	if err := h.roomRepo.Update(room); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(presenter.ErrorResponse{Error: err.Error()})
 	}
-
-	redisClient := redis.GetClient()
-	ctx := context.Background()
 
 	redisClient.Set(ctx, "rooms:"+room.ID.String(), room, 0)
 
