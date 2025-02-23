@@ -34,9 +34,7 @@ import (
 func main() {
 	app := fiber.New()
 
-	if err := godotenv.Load(); err != nil {
-		log.Fatal("Error loading .env file")
-	}
+	godotenv.Load()
 
 	database.ConnectDB()
 
