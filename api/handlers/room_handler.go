@@ -10,6 +10,8 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v4"
+	"github.com/google/uuid"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 )
 
@@ -144,9 +146,9 @@ func (h *RoomHandler) JoinRoom(c *fiber.Ctx) error {
 		}
 	}
 
-	user := c.Locals("user").(*entities.User)
+	id := c.Locals("user").(jwt.MapClaims)["id"].(string)
 
-	room.Users = append(room.Users, user)
+	room.Users = append(room.Users, &entities.User{ID: uuid.MustParse(id)})
 
 	if err := h.roomRepo.Update(room); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(presenter.ErrorResponse{Error: err.Error()})

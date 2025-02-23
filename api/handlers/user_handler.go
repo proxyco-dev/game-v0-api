@@ -69,7 +69,7 @@ func (h *UserHandler) SignIn(c *fiber.Ctx) error {
 		return c.Status(401).JSON(presenter.ErrorResponse{Error: "შეყვანილი მონაცემები არ არის სწორი"})
 	}
 
-	token, err := generateToken(user.Email)
+	token, err := generateToken(user.ID.String(), user.Email)
 	if err != nil {
 		return c.Status(500).JSON(presenter.ErrorResponse{Error: "ვერ მოხერხდა ტოკენის გენერაცია"})
 	}
@@ -142,8 +142,9 @@ func checkPasswordHash(password, hash string) bool {
 	return bcrypt.CompareHashAndPassword([]byte(hash), []byte(password)) == nil
 }
 
-func generateToken(email string) (string, error) {
+func generateToken(id string, email string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"id":    id,
 		"email": email,
 		"exp":   time.Now().Add(time.Hour * 72).Unix(),
 	})
