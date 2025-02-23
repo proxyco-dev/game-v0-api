@@ -16,16 +16,18 @@ import (
 )
 
 type RoomHandler struct {
-	roomRepo  repository.RoomRepository
-	bundle    *i18n.Bundle
-	validator *validator.Validate
+	roomRepo         repository.RoomRepository
+	bundle           *i18n.Bundle
+	validator        *validator.Validate
+	websocketHandler *WebSocketHandler
 }
 
-func NewRoomHandler(roomRepo repository.RoomRepository, bundle *i18n.Bundle) *RoomHandler {
+func NewRoomHandler(roomRepo repository.RoomRepository, bundle *i18n.Bundle, websocketHandler *WebSocketHandler) *RoomHandler {
 	return &RoomHandler{
-		roomRepo:  roomRepo,
-		bundle:    bundle,
-		validator: validator.New(),
+		roomRepo:         roomRepo,
+		bundle:           bundle,
+		validator:        validator.New(),
+		websocketHandler: websocketHandler,
 	}
 }
 
@@ -160,6 +162,10 @@ func (h *RoomHandler) JoinRoom(c *fiber.Ctx) error {
 
 	message, _ := localizer.Localize(&i18n.LocalizeConfig{
 		MessageID: "JoinedSuccessfully",
+	})
+
+	h.websocketHandler.GetManager().EmitToRoom(room.ID.String(), "USER_JOINED", fiber.Map{
+		"message": message,
 	})
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{

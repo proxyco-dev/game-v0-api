@@ -16,6 +16,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/websocket/v2"
 	"github.com/joho/godotenv"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/pelletier/go-toml/v2"
@@ -64,13 +65,30 @@ func main() {
 
 	// Room Routes
 	roomRepo := roomRepository.NewRoomRepository(database.DB)
-	roomHandler := handlers.NewRoomHandler(roomRepo, bundle)
+
+	wsHandler := handlers.NewWebSocketHandler()
+	go wsHandler.GetManager().Run()
+
+	roomHandler := handlers.NewRoomHandler(roomRepo, bundle, wsHandler)
 
 	app.Get("/room", common.AuthMiddleware, roomHandler.GetRooms)
 	app.Get("/room/:id", common.AuthMiddleware, roomHandler.FindOne)
 
 	app.Post("/room", common.AuthMiddleware, roomHandler.CreateRoom)
 	app.Post("/room/join", common.AuthMiddleware, roomHandler.JoinRoom)
+
+	app.Use("/ws", func(c *fiber.Ctx) error {
+		if websocket.IsWebSocketUpgrade(c) {
+			roomID := c.Query("roomId")
+			if roomID == "" {
+				return fiber.ErrBadRequest
+			}
+			c.Locals("allowed", true)
+			return c.Next()
+		}
+		return fiber.ErrUpgradeRequired
+	})
+	app.Get("/ws", websocket.New(wsHandler.HandleWebSocket))
 
 	log.Fatal(app.Listen(":8080"))
 }
