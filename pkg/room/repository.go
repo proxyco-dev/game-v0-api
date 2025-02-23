@@ -14,6 +14,7 @@ type RoomRepository interface {
 	Create(room *entities.Room) error
 	FindAll() ([]entities.Room, error)
 	FindById(id string) (*entities.Room, error)
+	FindByIdWithUsers(id string) (*entities.Room, error)
 	Update(room *entities.Room) error
 }
 
@@ -31,7 +32,7 @@ func (r *roomRepository) Create(room *entities.Room) error {
 
 func (r *roomRepository) FindAll() ([]entities.Room, error) {
 	var rooms []entities.Room
-	err := r.db.Table(roomsTableName).Find(&rooms).Where("is_active = ? AND is_deleted = ?", true, false).Error
+	err := r.db.Table(roomsTableName).Where("is_active = ? AND is_deleted = ?", true, false).Find(&rooms).Error
 	if err != nil {
 		return nil, err
 	}
@@ -41,6 +42,15 @@ func (r *roomRepository) FindAll() ([]entities.Room, error) {
 func (r *roomRepository) FindById(id string) (*entities.Room, error) {
 	var room entities.Room
 	err := r.db.Table(roomsTableName).Where("id = ? AND is_deleted = ? AND is_active = ?", id, false, true).First(&room).Error
+	if err != nil {
+		return nil, err
+	}
+	return &room, nil
+}
+
+func (r *roomRepository) FindByIdWithUsers(id string) (*entities.Room, error) {
+	var room entities.Room
+	err := r.db.Table(roomsTableName).Where("id = ? AND is_deleted = ? AND is_active = ?", id, false, true).Preload("Users").First(&room).Error
 	if err != nil {
 		return nil, err
 	}

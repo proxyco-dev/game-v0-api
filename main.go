@@ -58,14 +58,18 @@ func main() {
 	userHandler := handlers.NewUserHandler(userRepo)
 
 	app.Get("/user/me", userHandler.GetMe)
+
 	app.Post("/user/sign-in", userHandler.SignIn)
 	app.Post("/user/sign-up", userHandler.SignUp)
 
+	// Room Routes
 	roomRepo := roomRepository.NewRoomRepository(database.DB)
 	roomHandler := handlers.NewRoomHandler(roomRepo, bundle)
 
-	app.Post("/room", common.AuthMiddleware, roomHandler.CreateRoom)
 	app.Get("/room", common.AuthMiddleware, roomHandler.GetRooms)
+	app.Get("/room/:id", common.AuthMiddleware, roomHandler.FindOne)
+
+	app.Post("/room", common.AuthMiddleware, roomHandler.CreateRoom)
 	app.Post("/room/join", common.AuthMiddleware, roomHandler.JoinRoom)
 
 	log.Fatal(app.Listen(":8080"))

@@ -154,12 +154,57 @@ func (h *RoomHandler) JoinRoom(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(presenter.ErrorResponse{Error: err.Error()})
 	}
 
-	redisClient.Set(ctx, "rooms:"+room.ID.String(), room, 0)
+	redisClient.Del(ctx, "rooms:"+room.ID.String())
 
 	localizer := c.Locals("localizer").(*i18n.Localizer)
 
 	message, _ := localizer.Localize(&i18n.LocalizeConfig{
 		MessageID: "JoinedSuccessfully",
+	})
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": message,
+		"room":    room,
+	})
+}
+
+// @Summary Find one room
+// @Description Find one room
+// @Tags Room
+// @Accept json
+// @Produce json
+// @Param id path string true "Room ID"
+// @Success 200 {object} presenter.RoomResponse
+// @Router /room/{id} [get]
+func (h *RoomHandler) FindOne(c *fiber.Ctx) error {
+	id := c.Params("id")
+	redisClient := redis.GetClient()
+	ctx := context.Background()
+
+	var room *entities.Room
+	redisRoom, err := redisClient.Get(ctx, "rooms:"+id).Result()
+	if err != nil {
+		room, err = h.roomRepo.FindByIdWithUsers(id)
+		if err != nil {
+			return c.Status(fiber.StatusNotFound).JSON(presenter.ErrorResponse{Error: err.Error()})
+		}
+
+		roomJson, err := json.Marshal(room)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(presenter.ErrorResponse{Error: err.Error()})
+		}
+
+		redisClient.Set(ctx, "rooms:"+id, roomJson, 0)
+	} else {
+		if err := json.Unmarshal([]byte(redisRoom), &room); err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(presenter.ErrorResponse{Error: err.Error()})
+		}
+	}
+
+	localizer := c.Locals("localizer").(*i18n.Localizer)
+
+	message, _ := localizer.Localize(&i18n.LocalizeConfig{
+		MessageID: "FetchedSuccessfully",
 	})
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
