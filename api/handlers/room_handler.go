@@ -47,9 +47,7 @@ func (h *RoomHandler) CreateRoom(c *fiber.Ctx) error {
 	}
 
 	room := &entities.Room{
-		Title:   request.Title,
-		Private: request.Private,
-		Code:    request.Code,
+		Title: request.Title,
 	}
 
 	if err := h.roomRepo.Create(room); err != nil {
@@ -91,5 +89,36 @@ func (h *RoomHandler) GetRooms(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"message": message,
 		"data":    rooms,
+	})
+}
+
+// @Summary Join a room
+// @Description Join a room
+// @Tags Room
+// @Accept json
+// @Produce json
+// @Param room body presenter.JoinRoomRequest true "Room"
+// @Success 200 {object} presenter.RoomResponse
+// @Router /room/join [post]
+func (h *RoomHandler) JoinRoom(c *fiber.Ctx) error {
+	var request presenter.JoinRoomRequest
+
+	if err := c.BodyParser(&request); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(presenter.ErrorResponse{Error: err.Error()})
+	}
+
+	if err := h.validator.Struct(request); err != nil {
+		validationErrors := err.(validator.ValidationErrors)
+		return c.Status(fiber.StatusBadRequest).JSON(presenter.ErrorResponse{Error: validationErrors.Error()})
+	}
+
+	room, err := h.roomRepo.FindById(request.Id)
+	if err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(presenter.ErrorResponse{Error: err.Error()})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "Room joined successfully",
+		"room":    room,
 	})
 }

@@ -9,3 +9,7 @@ type RoomRequest struct {
 	Private bool   `json:"private"`
 	Code    string `json:"code"`
 }
+
+type JoinRoomRequest struct {
+	Id string `json:"id"`
+}

@@ -13,6 +13,7 @@ const (
 type RoomRepository interface {
 	Create(room *entities.Room) error
 	FindAll() ([]entities.Room, error)
+	FindById(id string) (*entities.Room, error)
 }
 
 type roomRepository struct {
@@ -34,4 +35,13 @@ func (r *roomRepository) FindAll() ([]entities.Room, error) {
 		return nil, err
 	}
 	return rooms, nil
+}
+
+func (r *roomRepository) FindById(id string) (*entities.Room, error) {
+	var room entities.Room
+	err := r.db.Table(roomsTableName).Where("id = ? AND is_deleted = ? AND is_active = ?", id, false, true).First(&room).Error
+	if err != nil {
+		return nil, err
+	}
+	return &room, nil
 }
