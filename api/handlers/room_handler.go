@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"game-v0-api/api/presenter"
 	entities "game-v0-api/pkg/entities"
 	repository "game-v0-api/pkg/room"
@@ -138,7 +137,6 @@ func (h *RoomHandler) JoinRoom(c *fiber.Ctx) error {
 	userID := uuid.MustParse(c.Locals("user").(jwt.MapClaims)["id"].(string))
 
 	for _, user := range room.Users {
-		fmt.Println(user.ID, userID)
 		if user.ID == userID {
 			return c.Status(fiber.StatusBadRequest).JSON(presenter.ErrorResponse{
 				Error: "User is already in the room",
@@ -147,6 +145,10 @@ func (h *RoomHandler) JoinRoom(c *fiber.Ctx) error {
 	}
 
 	room.Users = append(room.Users, &entities.User{ID: userID})
+
+	if room.MaxPlayers == len(room.Users) {
+		room.Status = "started"
+	}
 
 	if err := h.roomRepo.Update(room); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(presenter.ErrorResponse{Error: err.Error()})

@@ -32,7 +32,7 @@ func (r *roomRepository) Create(room *entities.Room) error {
 
 func (r *roomRepository) FindAll() ([]entities.Room, error) {
 	var rooms []entities.Room
-	err := r.db.Table(roomsTableName).Preload("Users").Where("is_active = ? AND is_deleted = ?", true, false).Find(&rooms).Error
+	err := r.db.Table(roomsTableName).Preload("Users").Where("is_active = ? AND is_deleted = ? AND status = ?", true, false, "waiting").Find(&rooms).Error
 	if err != nil {
 		return nil, err
 	}
