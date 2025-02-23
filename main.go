@@ -3,6 +3,7 @@ package main
 import (
 	"game-v0-api/api/handlers"
 	"game-v0-api/database"
+	roomRepository "game-v0-api/pkg/room"
 	userRepository "game-v0-api/pkg/user"
 	"log"
 
@@ -41,6 +42,12 @@ func main() {
 	app.Get("/user/me", userHandler.GetMe)
 	app.Post("/user/sign-in", userHandler.SignIn)
 	app.Post("/user/sign-up", userHandler.SignUp)
+
+	roomRepo := roomRepository.NewRoomRepository(database.DB)
+	roomHandler := handlers.NewRoomHandler(roomRepo)
+
+	app.Post("/room", roomHandler.CreateRoom)
+	app.Get("/room", roomHandler.GetRooms)
 
 	log.Fatal(app.Listen(":8080"))
 }

@@ -1,7 +1,7 @@
 package repository
 
 import (
-	models "game-v0-api/pkg/entities"
+	"game-v0-api/pkg/entities"
 
 	"gorm.io/gorm"
 )
@@ -11,8 +11,8 @@ const (
 )
 
 type UserRepository interface {
-	Create(user *models.User) error
-	FindByEmail(email string) (*models.User, error)
+	Create(user *entities.User) error
+	FindByEmail(email string) (*entities.User, error)
 }
 
 type userRepository struct {
@@ -23,12 +23,12 @@ func NewUserRepository(db *gorm.DB) UserRepository {
 	return &userRepository{db: db}
 }
 
-func (r *userRepository) Create(user *models.User) error {
+func (r *userRepository) Create(user *entities.User) error {
 	return r.db.Table(usersTableName).Create(user).Error
 }
 
-func (r *userRepository) FindByEmail(email string) (*models.User, error) {
-	var user models.User
+func (r *userRepository) FindByEmail(email string) (*entities.User, error) {
+	var user entities.User
 	err := r.db.Table(usersTableName).First(&user, "\"email\" = ?", email).Error
 	if err != nil {
 		return nil, err

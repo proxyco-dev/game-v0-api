@@ -62,6 +62,24 @@ info:
   title: Game v0 API
   version: "1.0"
 paths:
+  /room:
+    get:
+      consumes:
+      - application/json
+      description: Get all rooms
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              additionalProperties: true
+              type: object
+            type: array
+      summary: Get all rooms
+      tags:
+      - Room
   /user/me:
     get:
       consumes:

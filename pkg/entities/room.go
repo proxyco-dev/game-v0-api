@@ -11,7 +11,7 @@ type Room struct {
 	Users     []*User    `json:"users" gorm:"many2many:room_users;"`
 	Title     string     `json:"title"`
 	Private   bool       `json:"private" gorm:"default:false"`
-	Code      string     `json:"code"`
+	Code      string     `json:"code" gorm:"default:''"`
 	IsActive  bool       `json:"isActive" gorm:"default:true"`
 	IsDeleted bool       `json:"isDeleted" gorm:"default:false"`
 	CreatedAt *time.Time `json:"createdAt" gorm:"column:createdAt"`
