@@ -2,27 +2,68 @@ package handlers
 
 import (
 	"game-v0-api/api/presenter"
+	entities "game-v0-api/pkg/entities"
 	repository "game-v0-api/pkg/room"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 )
 
 type RoomHandler struct {
-	roomRepo repository.RoomRepository
-	bundle   *i18n.Bundle
+	roomRepo  repository.RoomRepository
+	bundle    *i18n.Bundle
+	validator *validator.Validate
 }
 
 func NewRoomHandler(roomRepo repository.RoomRepository, bundle *i18n.Bundle) *RoomHandler {
 	return &RoomHandler{
-		roomRepo: roomRepo,
-		bundle:   bundle,
+		roomRepo:  roomRepo,
+		bundle:    bundle,
+		validator: validator.New(),
 	}
 }
 
+// @Summary Create a room
+// @Description Create a room
+// @Tags Room
+// @Accept json
+// @Produce json
+// @Param room body presenter.RoomRequest true "Room"
+// @Success 200 {object} presenter.RoomResponse
+// @Router /room [post]
 func (h *RoomHandler) CreateRoom(c *fiber.Ctx) error {
+	var request presenter.RoomRequest
+
+	if err := c.BodyParser(&request); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(presenter.ErrorResponse{
+			Error: err.Error(),
+		})
+	}
+
+	if err := h.validator.Struct(request); err != nil {
+		validationErrors := err.(validator.ValidationErrors)
+		return c.Status(fiber.StatusBadRequest).JSON(presenter.ErrorResponse{Error: validationErrors.Error()})
+	}
+
+	room := &entities.Room{
+		Title:   request.Title,
+		Private: request.Private,
+		Code:    request.Code,
+	}
+
+	if err := h.roomRepo.Create(room); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(presenter.ErrorResponse{Error: err.Error()})
+	}
+
+	localizer := c.Locals("localizer").(*i18n.Localizer)
+
+	message, _ := localizer.Localize(&i18n.LocalizeConfig{
+		MessageID: "CreatedSuccessfully",
+	})
+
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"message": "Room created successfully",
+		"message": message,
 	})
 }
 

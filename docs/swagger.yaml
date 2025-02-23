@@ -10,6 +10,20 @@ definitions:
       email:
         type: string
     type: object
+  presenter.RoomRequest:
+    properties:
+      code:
+        type: string
+      private:
+        type: boolean
+      title:
+        type: string
+    type: object
+  presenter.RoomResponse:
+    properties:
+      id:
+        type: string
+    type: object
   presenter.SignInRequest:
     properties:
       email:
@@ -78,6 +92,27 @@ paths:
               type: object
             type: array
       summary: Get all rooms
+      tags:
+      - Room
+    post:
+      consumes:
+      - application/json
+      description: Create a room
+      parameters:
+      - description: Room
+        in: body
+        name: room
+        required: true
+        schema:
+          $ref: '#/definitions/presenter.RoomRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/presenter.RoomResponse'
+      summary: Create a room
       tags:
       - Room
   /user/me:
