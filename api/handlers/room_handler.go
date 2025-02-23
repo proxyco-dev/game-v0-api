@@ -1,8 +1,10 @@
 package handlers
 
 import (
+	"context"
 	"game-v0-api/api/presenter"
 	entities "game-v0-api/pkg/entities"
+	"game-v0-api/pkg/redis"
 	repository "game-v0-api/pkg/room"
 
 	"github.com/go-playground/validator/v10"
@@ -53,6 +55,11 @@ func (h *RoomHandler) CreateRoom(c *fiber.Ctx) error {
 	if err := h.roomRepo.Create(room); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(presenter.ErrorResponse{Error: err.Error()})
 	}
+
+	redisClient := redis.GetClient()
+	ctx := context.Background()
+
+	redisClient.Set(ctx, "rooms:"+room.ID.String(), room, 0)
 
 	localizer := c.Locals("localizer").(*i18n.Localizer)
 

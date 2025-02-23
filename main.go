@@ -3,9 +3,12 @@ package main
 import (
 	"game-v0-api/api/handlers"
 	"game-v0-api/database"
+	"game-v0-api/pkg/common"
+	"game-v0-api/pkg/redis"
 	roomRepository "game-v0-api/pkg/room"
 	userRepository "game-v0-api/pkg/user"
 	"log"
+	"os"
 
 	_ "game-v0-api/docs"
 
@@ -46,6 +49,8 @@ func main() {
 
 	app.Use(middleware.I18nMiddleware(bundle))
 
+	redis.InitRedis(os.Getenv("REDIS_URL"), os.Getenv("REDIS_PASSWORD"))
+
 	app.Get("/swagger/*", fiberSwagger.WrapHandler)
 
 	// User Routes
@@ -59,8 +64,8 @@ func main() {
 	roomRepo := roomRepository.NewRoomRepository(database.DB)
 	roomHandler := handlers.NewRoomHandler(roomRepo, bundle)
 
-	app.Post("/room", roomHandler.CreateRoom)
-	app.Get("/room", roomHandler.GetRooms)
+	app.Post("/room", common.AuthMiddleware, roomHandler.CreateRoom)
+	app.Get("/room", common.AuthMiddleware, roomHandler.GetRooms)
 
 	log.Fatal(app.Listen(":8080"))
 }
