@@ -12,3 +12,7 @@ type RoomRequest struct {
 type JoinRoomRequest struct {
 	Id string `json:"id"`
 }
+
+type LeaveRoomRequest struct {
+	Id string `json:"id"`
+}

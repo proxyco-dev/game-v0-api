@@ -78,6 +78,7 @@ func main() {
 
 	api.Post("/room", common.AuthMiddleware, roomHandler.CreateRoom)
 	api.Post("/room/join", common.AuthMiddleware, roomHandler.JoinRoom)
+	api.Post("/room/leave", common.AuthMiddleware, roomHandler.LeaveRoom)
 
 	api.Use("/ws", func(c *fiber.Ctx) error {
 		if websocket.IsWebSocketUpgrade(c) {

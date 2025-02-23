@@ -69,7 +69,7 @@ func (h *RoomHandler) CreateRoom(c *fiber.Ctx) error {
 		MessageID: "CreatedSuccessfully",
 	})
 
-	h.websocketHandler.GetManager().EmitToRoom("room", "created", fiber.Map{
+	h.websocketHandler.GetManager().EmitToRoom("room", "USER_CREATED", fiber.Map{
 		"message": message,
 	})
 
@@ -161,6 +161,59 @@ func (h *RoomHandler) JoinRoom(c *fiber.Ctx) error {
 	})
 
 	h.websocketHandler.GetManager().EmitToRoom("room", "USER_JOINED", fiber.Map{
+		"message": message,
+	})
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": message,
+		"room":    room,
+	})
+}
+
+// @Summary Leave a room
+// @Description Leave a room
+// @Tags Room
+// @Accept json
+// @Produce json
+// @Param id path string true "Room ID"
+// @Success 200 {object} presenter.RoomResponse
+// @Router /api/room/leave [post]
+func (h *RoomHandler) LeaveRoom(c *fiber.Ctx) error {
+	var request presenter.LeaveRoomRequest
+
+	if err := c.BodyParser(&request); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(presenter.ErrorResponse{Error: err.Error()})
+	}
+
+	if err := h.validator.Struct(request); err != nil {
+		validationErrors := err.(validator.ValidationErrors)
+		return c.Status(fiber.StatusBadRequest).JSON(presenter.ErrorResponse{Error: validationErrors.Error()})
+	}
+
+	room, err := h.roomRepo.FindById(request.Id)
+	if err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(presenter.ErrorResponse{Error: err.Error()})
+	}
+
+	userID := uuid.MustParse(c.Locals("user").(jwt.MapClaims)["id"].(string))
+
+	for i, user := range room.Users {
+		if user.ID == userID {
+			room.Users = append(room.Users[:i], room.Users[i+1:]...)
+		}
+	}
+
+	if err := h.roomRepo.Update(room); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(presenter.ErrorResponse{Error: err.Error()})
+	}
+
+	localizer := c.Locals("localizer").(*i18n.Localizer)
+
+	message, _ := localizer.Localize(&i18n.LocalizeConfig{
+		MessageID: "LeftSuccessfully",
+	})
+
+	h.websocketHandler.GetManager().EmitToRoom("room", "USER_LEFT", fiber.Map{
 		"message": message,
 	})
 

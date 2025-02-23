@@ -12,7 +12,7 @@ definitions:
     type: object
   presenter.MeResponse:
     properties:
-      email:
+      id:
         type: string
     type: object
   presenter.RoomRequest:
@@ -159,6 +159,27 @@ paths:
           schema:
             $ref: '#/definitions/presenter.RoomResponse'
       summary: Join a room
+      tags:
+      - Room
+  /api/room/leave:
+    post:
+      consumes:
+      - application/json
+      description: Leave a room
+      parameters:
+      - description: Room ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/presenter.RoomResponse'
+      summary: Leave a room
       tags:
       - Room
   /api/user/me:
