@@ -9,10 +9,15 @@ import (
 
 	_ "game-v0-api/docs"
 
+	"game-v0-api/api/middleware"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/joho/godotenv"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
+	"github.com/pelletier/go-toml/v2"
 	fiberSwagger "github.com/swaggo/fiber-swagger"
+	"golang.org/x/text/language"
 )
 
 // @title Game v0 API
@@ -32,6 +37,14 @@ func main() {
 	database.ConnectDB()
 
 	app.Use(cors.New())
+	bundle := i18n.NewBundle(language.Georgian)
+
+	bundle.RegisterUnmarshalFunc("toml", toml.Unmarshal)
+
+	bundle.MustLoadMessageFile("./lang/active.ka.toml")
+	bundle.MustLoadMessageFile("./lang/active.en.toml")
+
+	app.Use(middleware.I18nMiddleware(bundle))
 
 	app.Get("/swagger/*", fiberSwagger.WrapHandler)
 
@@ -44,7 +57,7 @@ func main() {
 	app.Post("/user/sign-up", userHandler.SignUp)
 
 	roomRepo := roomRepository.NewRoomRepository(database.DB)
-	roomHandler := handlers.NewRoomHandler(roomRepo)
+	roomHandler := handlers.NewRoomHandler(roomRepo, bundle)
 
 	app.Post("/room", roomHandler.CreateRoom)
 	app.Get("/room", roomHandler.GetRooms)
