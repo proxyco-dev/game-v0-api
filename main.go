@@ -141,20 +141,41 @@ func handleInput(player *Player, msg map[string]interface{}) {
 		case "shoot":
 			if dirX, ok := msg["dirX"].(float64); ok {
 				if dirY, ok := msg["dirY"].(float64); ok {
-					bulletID := fmt.Sprintf("bullet%d", len(game.Bullets)+1)
-					game.Bullets[bulletID] = &Bullet{
-						ID:      bulletID,
-						X:       player.X,
-						Y:       player.Y,
-						VX:      dirX * 5,
-						VY:      dirY * 5,
-						OwnerID: player.ID,
-					}
-					log.Println("Bullet spawned:", bulletID, "at x:", player.X, "y:", player.Y, "dirX:", dirX, "dirY:", dirY)
+					magnitude := math.Sqrt(dirX*dirX + dirY*dirY)
+					normalizedDirX := dirX / magnitude
+					normalizedDirY := dirY / magnitude
+
+					perpX := -normalizedDirY
+					perpY := normalizedDirX
+
+					createBullet(player, normalizedDirX*5, normalizedDirY*5, 0)
+
+					createBullet(player,
+						(normalizedDirX+perpX*0.2)*5,
+						(normalizedDirY+perpY*0.2)*5,
+						1)
+
+					createBullet(player,
+						(normalizedDirX-perpX*0.2)*5,
+						(normalizedDirY-perpY*0.2)*5,
+						2)
 				}
 			}
 		}
 	}
+}
+
+func createBullet(player *Player, vx, vy float64, offset int) {
+	bulletID := fmt.Sprintf("bullet%d", len(game.Bullets)+1+offset)
+	game.Bullets[bulletID] = &Bullet{
+		ID:      bulletID,
+		X:       player.X,
+		Y:       player.Y,
+		VX:      vx,
+		VY:      vy,
+		OwnerID: player.ID,
+	}
+	log.Println("Bullet spawned:", bulletID, "at x:", player.X, "y:", player.Y, "vx:", vx, "vy:", vy)
 }
 
 func spawnEnemies() {
