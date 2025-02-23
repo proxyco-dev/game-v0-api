@@ -1,8 +1,12 @@
 package main
 
 import (
+	"game-v0-api/api/handlers"
 	"game-v0-api/database"
+	userRepository "game-v0-api/pkg/user"
 	"log"
+
+	_ "game-v0-api/docs"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -30,9 +34,13 @@ func main() {
 
 	app.Get("/swagger/*", fiberSwagger.WrapHandler)
 
-	app.Get("/", func(c *fiber.Ctx) error {
-		return c.SendString("Hello, World!")
-	})
+	// User Routes
+	userRepo := userRepository.NewUserRepository(database.DB)
+	userHandler := handlers.NewUserHandler(userRepo)
+
+	app.Get("/user/me", userHandler.GetMe)
+	app.Post("/user/sign-in", userHandler.SignIn)
+	app.Post("/user/sign-up", userHandler.SignUp)
 
 	log.Fatal(app.Listen(":8080"))
 }

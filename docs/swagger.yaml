@@ -1,0 +1,145 @@
+basePath: /
+definitions:
+  presenter.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  presenter.MeResponse:
+    properties:
+      email:
+        type: string
+    type: object
+  presenter.SignInRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
+  presenter.SignInResponse:
+    properties:
+      token:
+        type: string
+    type: object
+  presenter.SignUpRequest:
+    properties:
+      email:
+        type: string
+      password:
+        maxLength: 32
+        minLength: 8
+        type: string
+      username:
+        maxLength: 32
+        minLength: 4
+        type: string
+    required:
+    - email
+    - password
+    - username
+    type: object
+  presenter.SignUpResponse:
+    properties:
+      message:
+        type: string
+      user:
+        properties:
+          email:
+            type: string
+          id:
+            type: string
+          username:
+            type: string
+        type: object
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: fbshamiladze@gmail.com
+    name: Nika Shamiladze
+  description: API for the survival game
+  title: Game v0 API
+  version: "1.0"
+paths:
+  /user/me:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/presenter.MeResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/presenter.ErrorResponse'
+      summary: Get current user
+      tags:
+      - User
+  /user/sign-in:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: User credentials
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/presenter.SignInRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/presenter.SignInResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/presenter.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/presenter.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/presenter.ErrorResponse'
+      summary: Sign in
+      tags:
+      - User
+  /user/sign-up:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: User credentials
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/presenter.SignUpRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Returns message and user object with excluded fields
+          schema:
+            $ref: '#/definitions/presenter.SignUpResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/presenter.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/presenter.ErrorResponse'
+      summary: Sign up
+      tags:
+      - User
+swagger: "2.0"
